@@ -12,24 +12,26 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup SSH key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
+      - name: Install sshpass
+        run: sudo apt-get install -y sshpass
 
-      - name: Deploy files via rsync
+      - name: Deploy files via rsync with password
+        env:
+          SSHPASS: ${{ secrets.SSH_PASSWORD }}
         run: |
-          rsync -avz --delete \
-            -e "ssh -i ~/.ssh/deploy_key -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
+          sshpass -e rsync -avz --delete \
+            -e "ssh -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PreferredAuthentications=keyboard-interactive,password -o PubkeyAuthentication=no" \
             --exclude '.git' \
             --exclude '.github' \
             ./ "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/u695642513/domains/nomadestan.com/public_nodejs/"
 
       - name: Restart Node.js app
+        env:
+          SSHPASS: ${{ secrets.SSH_PASSWORD }}
         run: |
-          ssh -i ~/.ssh/deploy_key -p ${{ secrets.SSH_PORT }} \
+          sshpass -e ssh -p ${{ secrets.SSH_PORT }} \
             -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+            -o PreferredAuthentications=keyboard-interactive,password \
+            -o PubkeyAuthentication=no \
             "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
             "cd /home/u695642513/domains/nomadestan.com/public_nodejs/ && npm install --production && mkdir -p tmp && touch tmp/restart.txt"
