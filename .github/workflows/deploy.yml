@@ -15,6 +15,17 @@ jobs:
       - name: Install sshpass
         run: sudo apt-get install -y sshpass
 
+      - name: Diagnose server state
+        env:
+          SSHPASS: ${{ secrets.SSH_PASSWORD }}
+        run: |
+          sshpass -e ssh -p ${{ secrets.SSH_PORT }} \
+            -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+            -o PreferredAuthentications=keyboard-interactive,password \
+            -o PubkeyAuthentication=no \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
+            "echo '=== Node.js version ===' && which node && node --version && echo '=== NPM version ===' && which npm && npm --version && echo '=== public_html contents ===' && ls -la /home/u695642513/domains/nomadestan.com/public_html/ && echo '=== public_html/public contents ===' && ls -la /home/u695642513/domains/nomadestan.com/public_html/public/ 2>/dev/null || echo 'no public subfolder' && echo '=== Check if server.js exists ===' && cat /home/u695642513/domains/nomadestan.com/public_html/server.js 2>/dev/null || echo 'no server.js' && echo '=== Check Node.js app config ===' && cat /home/u695642513/domains/nomadestan.com/public_html/.htaccess 2>/dev/null || echo 'no .htaccess' && echo '=== Check error logs ===' && tail -50 /home/u695642513/logs/nomadestan.com.error.log 2>/dev/null || echo 'no error log found' && echo '=== Check passenger/node logs ===' && tail -50 /home/u695642513/logs/nomadestan.com.nodejs.log 2>/dev/null || echo 'no nodejs log' && echo '=== Find logs ===' && find /home/u695642513/logs/ -name '*.log' -type f 2>/dev/null | head -20 || echo 'no logs dir'"
+
       - name: Deploy files via rsync with password
         env:
           SSHPASS: ${{ secrets.SSH_PASSWORD }}
