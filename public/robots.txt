@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://nomadestan.com/sitemap.xml
