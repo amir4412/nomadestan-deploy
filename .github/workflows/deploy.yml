@@ -1,0 +1,42 @@
+name: Deploy to Hostinger
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy via SCP
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          port: ${{ secrets.SSH_PORT }}
+          source: "."
+          target: "/home/u695642513/domains/nomadestan.com/public_nodejs/"
+          overwrite: true
+          rm: true
+
+      - name: Restart Node.js app
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            cd /home/u695642513/domains/nomadestan.com/public_nodejs/
+            npm install --production
+            # Restart via Hostinger's passenger/node mechanism
+            mkdir -p tmp
+            touch tmp/restart.txt
+            # Also try pm2 if available
+            which pm2 && pm2 restart all || true
+            echo "Deployment complete!"
