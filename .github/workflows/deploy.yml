@@ -19,13 +19,13 @@ jobs:
         env:
           SSHPASS: ${{ secrets.SSH_PASSWORD }}
         run: |
-          sshpass -e rsync -avz --delete \
+          sshpass -e rsync -avz \
             -e "ssh -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PreferredAuthentications=keyboard-interactive,password -o PubkeyAuthentication=no" \
             --exclude '.git' \
             --exclude '.github' \
             ./ "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/u695642513/domains/nomadestan.com/public_html/"
 
-      - name: Restart Node.js app
+      - name: Install dependencies and restart Node.js app
         env:
           SSHPASS: ${{ secrets.SSH_PASSWORD }}
         run: |
