@@ -23,7 +23,7 @@ jobs:
             -e "ssh -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PreferredAuthentications=keyboard-interactive,password -o PubkeyAuthentication=no" \
             --exclude '.git' \
             --exclude '.github' \
-            ./ "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/u695642513/domains/nomadestan.com/public_nodejs/"
+            ./ "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/u695642513/domains/nomadestan.com/public_html/"
 
       - name: Restart Node.js app
         env:
@@ -34,4 +34,4 @@ jobs:
             -o PreferredAuthentications=keyboard-interactive,password \
             -o PubkeyAuthentication=no \
             "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
-            "export PATH=/opt/alt/alt-nodejs22/root/usr/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:\$PATH && cd /home/u695642513/domains/nomadestan.com/public_nodejs/ && npm install --production && mkdir -p tmp && touch tmp/restart.txt"
+            "export PATH=/opt/alt/alt-nodejs22/root/usr/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:\$PATH && cd /home/u695642513/domains/nomadestan.com/public_html/ && npm install --production && mkdir -p tmp && touch tmp/restart.txt"
