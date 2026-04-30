@@ -1,6 +1,0 @@
-DirectoryIndex disabled
-
-RewriteEngine On
-
-# Redirect all requests to the Node.js app
-RewriteRule ^(.*)$ http://localhost:%{ENV:PORT}/$1 [P,L]
