@@ -12,31 +12,30 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Deploy via SCP
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          password: ${{ secrets.SSH_PASSWORD }}
-          port: ${{ secrets.SSH_PORT }}
-          source: "."
-          target: "/home/u695642513/domains/nomadestan.com/public_nodejs/"
-          overwrite: true
-          rm: true
+      - name: Install sshpass
+        run: sudo apt-get install -y sshpass
+
+      - name: Deploy files via rsync
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+        run: |
+          sshpass -p "$SSH_PASSWORD" rsync -avz --delete \
+            -e "ssh -p $SSH_PORT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
+            --exclude '.git' \
+            --exclude '.github' \
+            ./ "$SSH_USER@$SSH_HOST:/home/u695642513/domains/nomadestan.com/public_nodejs/"
 
       - name: Restart Node.js app
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          password: ${{ secrets.SSH_PASSWORD }}
-          port: ${{ secrets.SSH_PORT }}
-          script: |
-            cd /home/u695642513/domains/nomadestan.com/public_nodejs/
-            npm install --production
-            # Restart via Hostinger's passenger/node mechanism
-            mkdir -p tmp
-            touch tmp/restart.txt
-            # Also try pm2 if available
-            which pm2 && pm2 restart all || true
-            echo "Deployment complete!"
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+        run: |
+          sshpass -p "$SSH_PASSWORD" ssh -p "$SSH_PORT" \
+            -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+            "$SSH_USER@$SSH_HOST" \
+            "cd /home/u695642513/domains/nomadestan.com/public_nodejs/ && npm install --production && mkdir -p tmp && touch tmp/restart.txt"
