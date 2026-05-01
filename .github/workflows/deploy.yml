@@ -15,23 +15,23 @@ jobs:
       - name: Install sshpass
         run: sudo apt-get install -y sshpass
 
-      - name: Clean up old .htaccess and deploy static files
+      - name: Clean up old server files
         env:
           SSHPASS: ${{ secrets.SSH_PASSWORD }}
         run: |
-          # First, remove the problematic .htaccess from the server
+          # Remove old Node.js server files (not needed for static SPA)
           sshpass -e ssh -p ${{ secrets.SSH_PORT }} \
             -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
             -o PreferredAuthentications=keyboard-interactive,password \
             -o PubkeyAuthentication=no \
             "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
-            "rm -f /home/u695642513/domains/nomadestan.com/public_html/.htaccess && rm -f /home/u695642513/domains/nomadestan.com/public_html/server.js && rm -f /home/u695642513/domains/nomadestan.com/public_html/package.json && rm -f /home/u695642513/domains/nomadestan.com/public_html/package-lock.json && rm -rf /home/u695642513/domains/nomadestan.com/public_html/node_modules"
+            "rm -f /home/u695642513/domains/nomadestan.com/public_html/server.js && rm -f /home/u695642513/domains/nomadestan.com/public_html/package.json && rm -f /home/u695642513/domains/nomadestan.com/public_html/package-lock.json && rm -rf /home/u695642513/domains/nomadestan.com/public_html/node_modules"
 
       - name: Deploy static files to public_html
         env:
           SSHPASS: ${{ secrets.SSH_PASSWORD }}
         run: |
-          # Deploy only the static files (public/ contents) directly to public_html root
+          # Deploy static files including .htaccess for SPA routing
           sshpass -e rsync -avz \
             -e "ssh -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PreferredAuthentications=keyboard-interactive,password -o PubkeyAuthentication=no" \
             public/ "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/u695642513/domains/nomadestan.com/public_html/"
