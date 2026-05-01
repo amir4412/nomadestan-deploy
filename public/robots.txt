@@ -1,3 +1,16 @@
+# Nomadestan Robots.txt
+# https://nomadestan.com
+
 User-agent: *
 Allow: /
+Disallow: /api/
+
+# Sitemap
 Sitemap: https://nomadestan.com/sitemap.xml
+
+# Crawl-delay for aggressive bots
+User-agent: AhrefsBot
+Crawl-delay: 10
+
+User-agent: SemrushBot
+Crawl-delay: 10
